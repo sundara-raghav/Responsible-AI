@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FairLoan AI Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="bg-orb orb-1" aria-hidden="true"></div>
+    <div class="bg-orb orb-2" aria-hidden="true"></div>
+
+    <div class="dashboard">
+        <header class="topbar">
+            <h1>FairLoan AI Audit</h1>
+            <p>Monitoring model parity with actionable fairness diagnostics.</p>
+        </header>
+
+        <main class="main-content">
+            <section class="panel controls-panel">
+                <h2>Audit Controls</h2>
+                <div class="control-grid">
+                    <div class="field">
+                        <label for="dimensionSelect">Sample Dataset</label>
+                        <select id="dimensionSelect">
+                            <option value="gender">Gender</option>
+                            <option value="age">Age</option>
+                        </select>
+                    </div>
+
+                    <div class="button-row">
+                        <button class="btn" id="auditButton" onclick="runAudit()">Run Sample Audit</button>
+                    </div>
+                </div>
+
+                <h3>Custom Simulation Input</h3>
+                <div class="control-grid custom-grid">
+                    <div class="field">
+                        <label for="labelA">Group A Label</label>
+                        <input id="labelA" type="text" value="Group A (Majority)" />
+                    </div>
+                    <div class="field">
+                        <label for="labelB">Group B Label</label>
+                        <input id="labelB" type="text" value="Group B (Minority)" />
+                    </div>
+                    <div class="field">
+                        <label for="rateA">Group A Approval %</label>
+                        <input id="rateA" type="number" min="0" max="100" step="0.1" value="85" />
+                    </div>
+                    <div class="field">
+                        <label for="rateB">Group B Approval %</label>
+                        <input id="rateB" type="number" min="0" max="100" step="0.1" value="42" />
+                    </div>
+                    <div class="field">
+                        <label for="threshold">Fairness Threshold (0-1)</label>
+                        <input id="threshold" type="number" min="0.1" max="1" step="0.01" value="0.8" />
+                    </div>
+                    <div class="button-row">
+                        <button class="btn btn-secondary" onclick="runCustomAudit()">Run Custom Audit</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <article class="kpi-card">
+                    <p>Status</p>
+                    <h3 id="kpiStatus">Waiting</h3>
+                </article>
+                <article class="kpi-card">
+                    <p>Disparate Impact Ratio</p>
+                    <h3 id="kpiRatio">-</h3>
+                </article>
+                <article class="kpi-card">
+                    <p>Parity Gap</p>
+                    <h3 id="kpiGap">-</h3>
+                </article>
+                <article class="kpi-card">
+                    <p>Fairness Score</p>
+                    <h3 id="kpiScore">-</h3>
+                </article>
+            </section>
+
+            <section class="panel chart-wrap">
+                <div class="chart-container">
+                    <canvas id="biasChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ratioChart"></canvas>
+                </div>
+            </section>
+
+            <section class="panel lower-grid">
+                <article id="insightBox" class="insight-card">
+                    <h3>Responsible AI Insight</h3>
+                    <p id="insightText">Run an audit to analyze model performance across demographics.</p>
+                </article>
+
+                <article class="history-card">
+                    <h3>Audit History</h3>
+                    <div class="history-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Ratio</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

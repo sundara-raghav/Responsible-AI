@@ -3,6 +3,19 @@ let ratioChart;
 const MAX_HISTORY = 8;
 const auditHistory = [];
 
+function switchView(viewName) {
+  const auditView = document.getElementById("auditView");
+  const minimizationView = document.getElementById("minimizationView");
+  const navAudit = document.getElementById("navAudit");
+  const navMinimization = document.getElementById("navMinimization");
+
+  const isAudit = viewName === "audit";
+  auditView.classList.toggle("is-hidden", !isAudit);
+  minimizationView.classList.toggle("is-hidden", isAudit);
+  navAudit.classList.toggle("is-active", isAudit);
+  navMinimization.classList.toggle("is-active", !isAudit);
+}
+
 function formatPercent(value) {
   return `${Number(value).toFixed(1)}%`;
 }
@@ -181,7 +194,10 @@ async function runCustomAudit() {
   }
 }
 
-window.addEventListener("load", runAudit);
+window.addEventListener("load", () => {
+  switchView("audit");
+  runAudit();
+});
 
 function getSampleMinimizationData() {
   return [

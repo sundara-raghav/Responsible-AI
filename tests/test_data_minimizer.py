@@ -129,3 +129,83 @@ def test_minimize_api_returns_400_for_unknown_purpose(client) -> None:
     payload = {"purpose": "unknown", "data": [{"name": "Alice"}]}
     response = client.post("/api/minimize", json=payload)
     assert response.status_code == 400
+
+
+def test_index_and_audit_routes(client) -> None:
+    """Index and audit routes should respond successfully."""
+    index_response = client.get("/")
+    assert index_response.status_code == 200
+
+    default_audit = client.get("/audit-data")
+    assert default_audit.status_code == 200
+    default_body = default_audit.get_json()
+    assert default_body["grouping"] == "Gender"
+
+    age_audit = client.get("/audit-data?dimension=age")
+    assert age_audit.status_code == 200
+    assert age_audit.get_json()["grouping"] == "Age"
+
+
+def test_audit_post_validation_and_fairness_branches(client) -> None:
+    """Audit POST validation and fairness branches should be exercised."""
+    bad_length = client.post(
+        "/audit-data",
+        json={"approval_rates": [85], "threshold": 0.8},
+    )
+    assert bad_length.status_code == 400
+
+    bad_numeric = client.post(
+        "/audit-data",
+        json={"approval_rates": ["a", "b"], "threshold": "x"},
+    )
+    assert bad_numeric.status_code == 400
+
+    bad_threshold = client.post(
+        "/audit-data",
+        json={"approval_rates": [85, 42], "threshold": 1.5},
+    )
+    assert bad_threshold.status_code == 400
+
+    fair_response = client.post(
+        "/audit-data",
+        json={"approval_rates": [80, 80], "threshold": 0.8},
+    )
+    assert fair_response.status_code == 200
+    fair_body = fair_response.get_json()
+    assert fair_body["status"] == "Fair Model"
+
+    low_threshold_response = client.post(
+        "/audit-data",
+        json={"approval_rates": [80, 80], "threshold": 0},
+    )
+    assert low_threshold_response.status_code == 400
+
+
+def test_minimizer_edge_cases(minimizer: DataMinimizer) -> None:
+    """Edge cases should cover null-like values and alternate buckets."""
+    minimized_none = minimizer.minimize(None, "analytics")
+    assert minimized_none.empty
+
+    edge_frame = pd.DataFrame(
+        [
+            {
+                "user_id": 3,
+                "name": "   ",
+                "email": None,
+                "phone": "abc",
+                "age": 60,
+                "country": "CA",
+                "transaction_amount": 55.0,
+            }
+        ]
+    )
+    minimized = minimizer.minimize(edge_frame, "user_display")
+    assert minimized.loc[0, "name"] == "***"
+    assert minimized.loc[0, "email"] is None
+    assert minimized.loc[0, "phone"] == "****"
+
+    assert DataMinimizer._age_to_group("bad") == "unknown"
+    assert DataMinimizer._age_to_group(17) == "<18"
+    assert DataMinimizer._age_to_group(30) == "26-35"
+    assert DataMinimizer._age_to_group(45) == "36-50"
+    assert DataMinimizer._age_to_group(70) == "51+"

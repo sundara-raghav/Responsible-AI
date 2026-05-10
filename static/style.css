@@ -73,6 +73,11 @@ body {
 }
 
 .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 0.9rem;
+  flex-wrap: wrap;
   margin-bottom: 0.8rem;
 }
 
@@ -88,10 +93,61 @@ body {
   font-size: 1rem;
 }
 
+.top-nav {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.nav-pill {
+  border: 1px solid rgba(20, 33, 43, 0.2);
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.55rem 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(20, 33, 43, 0.12);
+}
+
+.nav-pill.is-active {
+  background: linear-gradient(135deg, #2d6cdf, #1746a2);
+  border-color: #1d4ca6;
+  color: #fff;
+}
+
 .main-content {
   margin-top: 1.2rem;
   display: grid;
   gap: 1.05rem;
+}
+
+.view-pane {
+  display: grid;
+  gap: 1.05rem;
+  animation: reveal 220ms ease;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .panel {
@@ -401,6 +457,15 @@ tbody tr:last-child td {
 @media (max-width: 640px) {
   .dashboard {
     padding: 0.85rem;
+  }
+
+  .top-nav {
+    width: 100%;
+  }
+
+  .nav-pill {
+    flex: 1;
+    text-align: center;
   }
 
   .chart-container {

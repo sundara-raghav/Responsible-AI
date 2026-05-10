@@ -1,0 +1,21 @@
+{
+  "model_training": [
+    "user_id",
+    "age_group",
+    "transaction_amount",
+    "is_fraud",
+    "country"
+  ],
+  "analytics": [
+    "age_group",
+    "transaction_amount",
+    "country"
+  ],
+  "user_display": [
+    "name",
+    "email",
+    "phone",
+    "country",
+    "age_group"
+  ]
+}

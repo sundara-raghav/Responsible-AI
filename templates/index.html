@@ -115,6 +115,47 @@
                     </div>
                 </article>
             </section>
+
+            <section class="panel minimization-panel">
+                <div class="minimization-header">
+                    <h3>Data Minimization Report</h3>
+                    <div class="minimization-controls">
+                        <label for="minPurpose">Purpose</label>
+                        <select id="minPurpose">
+                            <option value="analytics">Analytics</option>
+                            <option value="model_training">Model Training</option>
+                            <option value="user_display">User Display</option>
+                        </select>
+                        <button class="btn" onclick="runMinimizationReport()">Generate Report</button>
+                    </div>
+                </div>
+
+                <div class="mini-grid">
+                    <article class="mini-card">
+                        <p>Fields Collected</p>
+                        <h4 id="fieldsCollected">-</h4>
+                    </article>
+                    <article class="mini-card">
+                        <p>Fields Used</p>
+                        <h4 id="fieldsUsed">-</h4>
+                    </article>
+                    <article class="mini-card">
+                        <p>Privacy Score</p>
+                        <h4 id="privacyScore" class="score-badge">-</h4>
+                    </article>
+                </div>
+
+                <div class="mini-list-grid">
+                    <article>
+                        <h4>Dropped Fields</h4>
+                        <p id="droppedFields">Run a report to view dropped fields.</p>
+                    </article>
+                    <article>
+                        <h4>Masked Fields</h4>
+                        <p id="maskedFields">Run a report to view masked fields.</p>
+                    </article>
+                </div>
+            </section>
         </main>
     </div>
 

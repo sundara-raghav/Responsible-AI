@@ -1,6 +1,14 @@
+from pathlib import Path
+
+import pandas as pd
 from flask import Flask, jsonify, render_template, request
 
+from utils.data_minimizer import DataMinimizer
+
 app = Flask(__name__)
+
+BASE_DIR = Path(__file__).resolve().parent
+MINIMIZER = DataMinimizer(str(BASE_DIR / "config" / "purpose_field_map.json"))
 
 
 SIMULATED_DATASETS = {
@@ -92,6 +100,29 @@ def audit_data():
     result["dimension"] = dimension
     result["grouping"] = selected["grouping"]
     return jsonify(result)
+
+
+@app.route("/api/minimize", methods=["POST"])
+def minimize_data():
+    payload = request.get_json(silent=True) or {}
+    purpose = payload.get("purpose")
+    input_data = payload.get("data", [])
+
+    if not isinstance(purpose, str) or not MINIMIZER.is_known_purpose(purpose):
+        return jsonify({"error": "Unknown purpose provided."}), 400
+
+    if not isinstance(input_data, list):
+        return jsonify({"error": "data must be a JSON array of records."}), 400
+
+    df = pd.DataFrame(input_data)
+    minimized_df = MINIMIZER.minimize(df, purpose)
+
+    return jsonify(
+        {
+            "data": minimized_df.to_dict(orient="records"),
+            "audit_log": MINIMIZER.audit_report(),
+        }
+    )
 
 
 if __name__ == "__main__":

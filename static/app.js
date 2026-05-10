@@ -182,3 +182,91 @@ async function runCustomAudit() {
 }
 
 window.addEventListener("load", runAudit);
+
+function getSampleMinimizationData() {
+  return [
+    {
+      user_id: 101,
+      name: "Alice Johnson",
+      email: "alice@example.com",
+      phone: "+1-202-555-0134",
+      age: 24,
+      country: "US",
+      transaction_amount: 780.5,
+      is_fraud: 0,
+      internal_notes: "High-value customer",
+    },
+    {
+      user_id: 102,
+      name: "Bob Smith",
+      email: "bob@example.com",
+      phone: "+1-202-555-0199",
+      age: 38,
+      country: "US",
+      transaction_amount: 122.1,
+      is_fraud: 1,
+      internal_notes: "Monitor unusual login locations",
+    },
+  ];
+}
+
+function listToDisplay(values) {
+  if (!values || values.length === 0) {
+    return "None";
+  }
+  return values.join(", ");
+}
+
+function updatePrivacyScore(score) {
+  const scoreNode = document.getElementById("privacyScore");
+  scoreNode.textContent = `${score.toFixed(0)}%`;
+  scoreNode.classList.remove("score-good", "score-medium", "score-low");
+
+  if (score > 70) {
+    scoreNode.classList.add("score-good");
+    return;
+  }
+
+  if (score >= 40) {
+    scoreNode.classList.add("score-medium");
+    return;
+  }
+
+  scoreNode.classList.add("score-low");
+}
+
+async function runMinimizationReport() {
+  const purpose = document.getElementById("minPurpose").value;
+  const data = getSampleMinimizationData();
+
+  try {
+    const response = await fetch("/api/minimize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data, purpose }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Failed to run minimization report");
+    }
+
+    const collectedFields = data.length ? Object.keys(data[0]) : [];
+    const usedFields = payload.data.length ? Object.keys(payload.data[0]) : [];
+    const minimizedPercent =
+      collectedFields.length === 0
+        ? 100
+        : ((collectedFields.length - usedFields.length) / collectedFields.length) * 100;
+
+    const actions = payload.audit_log.actions || [];
+    const latestAction = actions.length ? actions[actions.length - 1] : { fields_dropped: [], fields_masked: [] };
+
+    document.getElementById("fieldsCollected").textContent = `${collectedFields.length}`;
+    document.getElementById("fieldsUsed").textContent = `${usedFields.length}`;
+    document.getElementById("droppedFields").textContent = listToDisplay(latestAction.fields_dropped);
+    document.getElementById("maskedFields").textContent = listToDisplay(latestAction.fields_masked);
+    updatePrivacyScore(Math.max(0, Math.min(100, minimizedPercent)));
+  } catch (error) {
+    setInsight(`Data minimization error: ${error.message}`, true);
+  }
+}
